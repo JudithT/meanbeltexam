@@ -1,0 +1,23 @@
+<table >
+  <thead>
+    <tr>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Birthday</th>
+      <th>Edit</th>
+      <th>Delete</th>
+    </tr>
+  </thead>
+<tbody>
+  <tr ng-repeat="friend in friends">
+      <td ng-bind="friend.firstname"></td>
+      <td ng-bind="friend.lastname"></td>
+      <td ng-bind="friend.birthday"></td>
+      <td><a href="#!/edit/{{friend._id}}">E</a></td>
+      <td><button ng-click="delete(friend)">X</button></td>
+    </tr>
+
+</tbody>
+</table>
+
+<p ng-repeat="friend in friends"></p>

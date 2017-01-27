@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html ng-app='myApp'>
+<head>
+  <meta charset="utf-8">
+  <title>Awesome Friends</title>
+  <script src="angular/angular.js" charset="utf-8"></script>
+  <script src="angular-route/angular-route.js" charset="utf-8"></script>
+  <script>
+  console.log(myApp)
+  var myApp = angular.module('myApp', ['ngRoute']);//must be defined only once for partials to show!
+  myApp.config(function ($routeProvider) {
+  // Routes to load your new and edit pages with new and edit controllers attached to them!
+  $routeProvider
+  .when('/edit/:id',{
+    templateUrl:'partials/edit.html',
+    controller:'editController',
+    controlAs:'NC'
+  })
+  .when('/new',{
+    templateUrl:'partials/new.html',
+    controller:'newController',
+
+  })
+  .when('/',{
+    templateUrl:'partials/dashboard.html',
+    controller:'dashboardController'
+
+  })
+
+  .otherwise('/')
+
+  });
+
+  myApp.factory('friendsFactory', function($http){
+    console.log('friendsFactory started')
+    var factory ={};
+
+    
+    factory.index = function(callback){
+      $http.get('/friends').then(function(res){
+        console.log(res);
+        if (callback && typeof callback == "function"){
+          callback(res.data);
+        }
+      })
+    }
+    factory.create = function(newFriend, callback){
+      $http.post('/friends',newFriend).then(function(res){
+      console.log(newFriend);
+
+      console.log(birthday);
+      newFriend.birthday = birthday;
+      // friends.push(newFriend);
+      if(callback && typeof callback == "function"){
+        callback(res.data);
+      }
+    })
+  }
+  factory.delete = function(friend, callback){
+    console.log(friend);
+    $http.delete('/friends/'+friend._id).then(function(res){
+      console.log(res);
+      callback(res.data);
+    })
+  }
+
+  factory.update = function(friend, callback) {
+          console.log('friend');
+          $http.put('/friends/'+friend._id, friend).then(function(res) {
+            callback(res.data);
+          })
+      }
+
+  factory.show = function(id, callback){
+    $http.get('/friends/'+id).then(function(res){
+      if(callback && typeof callback == 'function'){
+        var date = new Date(res.data.birthday);
+        console.log(date);
+        var birthday =  "01/" + "10/" + date.getFullYear();
+        console.log(typeof birthday);
+        res.data.birthday=date;
+        callback(res.data);
+      }
+    })
+  }
+
+    return factory;
+
+  })
+
+
+  myApp.controller('dashboardController', ['$scope', 'friendsFactory',function($scope, friendsFactory) {
+          console.log('dashboardController started')
+          friendsFactory.index(function(data){
+            $scope.friends = data;
+          })
+          $scope.delete = function(friend){
+            friendsFactory.delete(friend, function(data){
+              friendsFactory.index(function(data){
+                $scope.friends = data;
+              })
+            })
+          }
+        }])
+
+  myApp.controller('newController',function($scope, friendsFactory, $location){
+    console.log('newController started');
+    $scope.create = function(){
+      console.log($scope.newFriend);
+      friendsFactory.create($scope.newFriend,function(){
+        $location.url('/');
+
+      })
+    }
+  })
+
+  myApp.controller('editController',function($scope, friendsFactory, $location, $routeParams){
+    console.log('editController started');
+    friendsFactory.show($routeParams.id, function(data){
+      console.log(data);
+      $scope.friend = data;
+    })
+
+      $scope.update = function(){
+        console.log("hello");
+      friendsFactory.update($scope.friend,function(data){
+        console.log(data);
+        $location.url('/');
+
+      })
+    }
+  })
+
+
+          // console.log($scope.friends);
+
+
+// })
+
+//   myApp.factory('friendsFactory', ['$http', function($http){ //friendsFactory makes an http request to the server
+//     console.log('friendsFactory started')
+//     var factory ={};
+//     factory.index = function(callback){
+//       //
+//       $http.get('/friends').then(function(res){//the appropriate route for the request is provided:$http.get('/friends'). here the computer will look at the route file to find the appropriate route/
+//       //res inside the function is the output of the this.index(res.json objects)
+//       console.log(res, "LINE 19");// in the routes.js file, the computer will look at   app.get('/friends', friends.index);.
+//       //var friends= require('../controllers/friends.js'); is a module that is telling us to look at inside the controllers folder for a friend.js file where we should see an index method.
+//       if (callback && typeof callback == "function"){
+//         callback(res.data);//data is an attribute of the received json objects
+//       }
+//     })
+//   }
+//
+//   factory.addfriend = function(friend,callback){
+//     console.log(friend)
+//     $http.post('/friends').then(function(res){
+//       console.log(res, "line 20");
+//       if (callback && typeof callback == "function"){
+//         friends.push(friend);
+//         console.log(friends)
+//         callback(res.data);
+//       }
+//     })
+//   }
+//
+//   factory.removefriend=function(friend,callback){
+//     //
+//     $http.delete('/friends/:id').then(function(res){
+//       console.log(res, "line 21");
+//       if(callback && typeof callback == "function"){
+//         friends.splice(friends.indexOf(friend), 1);
+//         callback(friend)
+//         console.log(friend)
+//       }
+//     })
+//
+//   }
+//
+//   factory.show = function(id, callback){
+//     //
+//     $http.get('friends'+id).then(function(res){
+//       if (callback && typeof callback == 'function'){
+//         callback(res.data);
+//
+//         }
+//     })
+//   }
+//   factory.update = function(friend, callback){
+//     //
+//     console.log(friend);
+//     $http.put('/friends/'+friend._id, friend).then(function(res){
+//       if (callback && typeof callback == 'function'){
+//         callback(res.data);
+//
+//         }
+//     })
+//   }
+//   return factory;
+// }])
+//
+// console.log("test")
+// myApp.controller('dashboardController',['$scope','friendsFactory',function($scope,friendsFactory){
+//   console.log("New controller")
+//   function setFriends(data){
+//     console.log(data)
+//     $scope.friends = data;
+//     $scope.friend = {};
+//   }
+//   $scope.index = function(){
+//     //
+//     friendsFactory.index(setFriends);// this looks a lot like factory.index = function(callback)
+//   };
+//   $scope.index();
+// }])
+//
+// myApp.controller('newController', ['$scope', 'friendsFactory', function($scope, friendsFactory){
+//   console.log('adding a new user');
+//
+//   $scope.Addfriend = function(){
+//     function setFriends(data){
+//       console.log(data)
+//       $scope.friends = data;
+//       $scope.friend = {};
+//     }
+//     console.log('hello');
+//     friendsFactory.Addfriend($scope.friends,setFriends);
+//     console.log($scope.friend)
+//
+//   }
+//
+//
+//
+//   $scope.delete = function(friend){
+//     friendsFactory.delete(Friend, function(data){
+//       friendsFactory.index(function(data){
+//         $scope.friends = data;
+//       })
+//     })
+//   };
+// }])
+//
+// myApp.controller('editController', ['$scope', 'friendsFactory', function($scope, friendsFactory){
+//   friendsFactory.show($routeParams.id, function(data){
+//     console.log(data);
+//     $scope.friend = data;
+//   })
+//
+//   $scope.update = function(){
+//     friendsFactory.update($scope.friend,function(data){
+//       console.log(data);
+//       $location.url('/');
+//     })
+//   }
+
+</script>
+</head>
+<body>
+  <div class="">
+    <a href="#!/new">Add a new friend!</a>|
+  </div>
+  <div ng-view="<a href="#!/edit/"+id>Edit your Friend</a>"></div>
+</body>
+</html>

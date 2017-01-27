@@ -1,0 +1,16 @@
+<h1>Hey {{user}}</h1>
+
+<div ng-repeat="error in errors" ng-if="errors!={}">
+  {{error.message}}
+</div>
+
+<form ng-submit="create()">
+  <input ng-model="newFriend.firstname" type="text" placeholder="firstname">
+  <input ng-model="newFriend.lastname" type="text" placeholder="lastname">
+  <input ng-model="newFriend.birthday" type="Date" placeholder="birthday">
+  <input type="submit" value="Add">
+
+  {{newFriend.firstname}}
+  {{newFriend.lastname}}
+  {{newFriend.birthday}}
+</form>
